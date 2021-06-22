@@ -1,0 +1,80 @@
+---
+name: CI Workflow
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+      - develop
+  pull_request:
+jobs:
+  outdated:
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+        go:
+          - latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: |
+          GOBIN=$PWD/bin go install github.com/psampaz/go-mod-outdated
+          go list -u -m -json all | ./bin/go-mod-outdated -direct -ci
+  lint:
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+        go:
+          - latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+  test:
+    needs:
+      - outdated
+      - lint
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+        go:
+          - latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: go version
+      - run: go mod vendor
+      - run: go test -race -covermode atomic -coverprofile=coverage.out .
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: coverage.out
+          flag-name: Go-${{ matrix.go }}
+          parallel: true
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          parallel-finished: true
