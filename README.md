@@ -1,6 +1,6 @@
 # time
 
-Archived. Please see [github.com/alexeyco/clog](https://github.com/alexeyco/clog)
+Archived. Please, look at [github.com/alexeyco/clog](https://github.com/alexeyco/clog)
 
 [![Build](https://github.com/alexeyco/time/actions/workflows/test.yml/badge.svg)](https://github.com/alexeyco/time/actions/workflows/test.yml)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/alexeyco/time)](https://pkg.go.dev/github.com/alexeyco/time)
